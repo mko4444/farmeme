@@ -4,7 +4,6 @@ import Link from "next/link";
 import { uniq } from "lodash";
 import dayjs from "@/lib/day";
 import { Fragment } from "react";
-import Image from "next/image";
 import * as cheerio from "cheerio";
 
 const lastDate = dayjs().startOf("day").subtract(3, "day").toDate();

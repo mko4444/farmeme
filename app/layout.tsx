@@ -19,18 +19,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en">
       <body className={font.className}>
         <header className="header--top row-sb-c">
-          <div className="row-fs-c" style={{ gap: ".5rem" }}>
+          <div className="col-on-mobile row-fs-c" style={{ gap: ".5rem" }}>
             <button>Mobile</button>
             <button>Archives</button>
             <button>Site News</button>
           </div>
-          <div className="row-fs-c" style={{ gap: ".5rem" }}>
+          <div className="col-on-mobile row-fs-c" style={{ gap: ".5rem" }}>
             <button>Open Links in New Tab</button>
             <button>RSS</button>
             <button>FC</button>
           </div>
         </header>
-        <header className="header--main row-sb-c max-w">
+        <header className="header--main col-on-mobile row-sb-c max-w">
           <div className="logo">
             far<div>meme</div>
           </div>
