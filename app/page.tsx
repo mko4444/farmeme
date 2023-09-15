@@ -19,13 +19,11 @@ async function fetchData() {
       text: {
         contains: "http",
       },
-      NOT: ["imgur.com", "warpcast.com", "far.quest", "farquest.app", "lu.ma", "zora.co", "imgur.com"].map(
-        (contains: string) => ({
-          text: {
-            contains,
-          },
-        })
-      ),
+      NOT: ["imgur.com", "warpcast.com"].map((contains: string) => ({
+        text: {
+          contains,
+        },
+      })),
     },
     include: {
       author: true,
