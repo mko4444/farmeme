@@ -8,7 +8,12 @@ export default function Nav() {
   const pathname = usePathname();
 
   return (
-    <nav>
+    <nav
+      style={{
+        margin: "0 0.5rem",
+        width: "calc(100% - 1rem)",
+      }}
+    >
       <Link
         href="/"
         className={classNames({

@@ -11,7 +11,12 @@ export default async function Home() {
   const data = await fetchData();
 
   return (
-    <main className="main">
+    <main
+      className="main"
+      style={{
+        padding: "0 1rem",
+      }}
+    >
       <h2>Top News</h2>
       {data
         .sort(
@@ -21,7 +26,7 @@ export default async function Home() {
         )
         .map(({ url, first_cast, rest_of_casts, cleaned_text, hostname, metadata, last_timestamp }, index) => (
           <div className="card col max-w" key={index}>
-            <button className="card--upvote">⬆</button>
+            <button className="card--upvote">↑</button>
             <span>
               <Link target="_blank" href={`https://warpcast.com/${first_cast.author.fname}`}>
                 <label>@{first_cast.author.fname}</label>
