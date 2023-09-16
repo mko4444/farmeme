@@ -21,6 +21,7 @@ export default async function Home() {
         )
         .map(({ url, first_cast, rest_of_casts, cleaned_text, hostname, metadata, last_timestamp }, index) => (
           <div className="card col max-w" key={index}>
+            <button className="card--upvote">⬆</button>
             <span>
               <Link target="_blank" href={`https://warpcast.com/${first_cast.author.fname}`}>
                 <label>@{first_cast.author.fname}</label>

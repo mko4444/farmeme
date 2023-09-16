@@ -26,14 +26,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Link>
           </div>
         </header>
-        <header className="header--main col-on-mobile row-sb-c max-w">
-          <Link href="/">
-            <div className="logo">
+        <header className="header--main row-sb-c col-on-mobile max-w">
+          <div>
+            <Link href="/" className="logo" style={{ width: "auto" }}>
               far<div>meme</div>
-            </div>
-          </Link>
-          <span>{dayjs().format("MMMM D, YYYY, h:mm A")}</span>
-          <div className="header--main--search row-c-c">
+            </Link>
+          </div>
+          <div className="header--main--middle max-w col-c-c">
+            <span>{dayjs().format("MMMM D, YYYY, h:mm A")}</span>
+          </div>
+          <div className="header--main--search row-c-c" style={{ width: 200 }}>
             <input placeholder="Search Farmeme..." />
             <button>Search</button>
           </div>

@@ -29,16 +29,18 @@ a {
 h2 {
   font-size: 1.33rem;
   color: #455;
-  padding: 1rem 0.5rem;
+  padding: 1rem;
 }
 
 h1 {
+  width: auto;
   font-size: 1.5rem;
   font-weight: 700;
   color: rgb(0, 72, 96);
   text-decoration: none;
   text-transform: none;
   line-height: 1.66rem;
+  word-break: break-word;
 }
 
 .logo {
@@ -73,8 +75,20 @@ h1 {
     padding: 1.5rem 1rem;
     gap: 0.5rem;
 
+    &--middle {
+      position: absolute;
+      margin: 0 auto;
+      left: 0;
+
+      @include mobile {
+        left: auto;
+        position: relative;
+      }
+    }
+
     &--search {
       gap: 0.25rem;
+      height: 2rem;
       button {
         height: 1.75rem;
         padding: 0 0.5rem;
@@ -106,6 +120,7 @@ nav {
 
   background: #2a4a60;
   gap: 0.25rem;
+  padding: 0 0.5rem;
   height: auto;
   text-transform: uppercase;
 
@@ -135,7 +150,39 @@ nav {
 
 .card {
   gap: 0.33rem;
-  padding: 1rem 0.5rem;
+  padding: 1rem;
+  position: relative;
+
+  &--upvote {
+    height: calc(100% - 1rem);
+    position: absolute;
+    width: 1rem;
+    top: 0.5rem;
+    left: -0.5rem;
+
+    background: #d8dfe3;
+    border: 1px solid #a3afb7;
+    color: rgba(0, 72, 96, 0.66);
+    font-size: 0.66rem;
+    border-radius: 0.25rem;
+    opacity: 0;
+    transition: all 150ms;
+    z-index: 999;
+
+    &:hover {
+      opacity: 0.9 !important;
+    }
+
+    &:active {
+      opacity: 0.8 !important;
+    }
+  }
+
+  &:hover {
+    .card--upvote {
+      opacity: 1;
+    }
+  }
 
   a:hover {
     h1,
