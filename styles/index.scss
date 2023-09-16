@@ -120,38 +120,49 @@ nav {
   }
 }
 
-.main {
-  &--card {
-    gap: 0.33rem;
-    padding: 1rem 0.5rem;
+.arrow-btn {
+  background: #686860;
+  height: 1.5rem;
+  width: 1.5rem;
+  border-radius: 50%;
+  color: white;
+  line-height: 1;
+  vertical-align: center;
+  font-weight: 700;
+  font-size: 0.66rem;
+  font-family: sans-serif;
+}
 
-    a:hover {
-      h1,
-      label,
-      span {
-        cursor: pointer;
-        text-decoration: underline;
-        background: #d0e8f4;
+.card {
+  gap: 0.33rem;
+  padding: 1rem 0.5rem;
+
+  a:hover {
+    h1,
+    label,
+    span {
+      cursor: pointer;
+      text-decoration: underline;
+      background: #d0e8f4;
+    }
+  }
+  label {
+    font-weight: 700;
+    color: #686860;
+  }
+  a {
+    color: #2a4a60;
+    &:visited:has(h1) {
+      text-decoration-color: #a04860;
+      h1 {
+        color: #a04860;
       }
     }
-    label {
-      font-weight: 700;
-      color: #686860;
-    }
-    a {
-      color: #2a4a60;
-      &:visited:has(h1) {
-        text-decoration-color: #a04860;
-        h1 {
-          color: #a04860;
-        }
-      }
-    }
-    border-top: 1px solid rgba(204, 204, 204, 0.476);
+  }
+  border-top: 1px solid rgba(204, 204, 204, 0.476);
 
-    &:nth-child(2) {
-      padding-top: 0;
-      border: none;
-    }
+  &:nth-child(2) {
+    padding-top: 0;
+    border: none;
   }
 }

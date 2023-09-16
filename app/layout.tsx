@@ -3,6 +3,7 @@ import { Arsenal } from "next/font/google";
 import "@/styles/index.scss";
 import dayjs from "dayjs";
 import Link from "next/link";
+import Nav from "./nav";
 
 const font = Arsenal({
   subsets: ["latin"],
@@ -26,22 +27,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </div>
         </header>
         <header className="header--main col-on-mobile row-sb-c max-w">
-          <div className="logo">
-            far<div>meme</div>
-          </div>
+          <Link href="/">
+            <div className="logo">
+              far<div>meme</div>
+            </div>
+          </Link>
           <span>{dayjs().format("MMMM D, YYYY, h:mm A")}</span>
           <div className="header--main--search row-c-c">
             <input placeholder="Search Farmeme..." />
             <button>Search</button>
           </div>
         </header>
-        <nav>
-          <Link href="/" className="active">
-            Home
-          </Link>
-          <Link href="/">River</Link>
-          <Link href="/">Leaderboard</Link>
-        </nav>
+        <Nav />
         {children}
       </body>
     </html>
