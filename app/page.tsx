@@ -5,7 +5,7 @@ import dayjs from "@/lib/day";
 import { Fragment } from "react";
 import { processTrendingCasts } from "@/util/processTrendingCasts";
 
-const lastDate = dayjs().startOf("day").subtract(3, "day").toDate();
+const lastDate = dayjs().startOf("day").subtract(1, "day").toDate();
 
 export default async function Home() {
   const data = await fetchData();
@@ -24,64 +24,62 @@ export default async function Home() {
             // sort first by # of unique authors and then by timestamp
             b.unique_authors.length - a.unique_authors.length || b.last_timestamp - a.last_timestamp
         )
-        .map(({ url, first_cast, rest_of_casts, cleaned_text, hostname, metadata, last_timestamp }, index) => (
-          <div className="card col max-w" key={index}>
-            <button className="card--upvote">↑</button>
-            <span>
-              <Link target="_blank" href={`https://warpcast.com/${first_cast.author.fname}`}>
-                <label>@{first_cast.author.fname}</label>
-              </Link>
-              <label style={{ margin: "0 .25rem", opacity: 0.5 }}>/</label>
-              <Link target="_blank" href={`https://${hostname}`}>
-                <label>{hostname}</label>
-              </Link>
-              <Link
-                target="_blank"
-                href={`https://warpcast.com/${first_cast.author.fname}/0x${first_cast.hash.slice(0, 6)}`}
-                style={{ marginLeft: ".5rem", color: "inherit", opacity: 0.66 }}
-              >
-                View cast
-              </Link>
-            </span>
-            <div className="max-w row-sb-fs" style={{ gap: "1rem" }}>
-              <div className="col flex" style={{ gap: ".33rem" }}>
-                <Link target="_blank" href={first_cast.embedded_urls[0]}>
-                  <h1 className="line-3">
-                    {metadata.title?.split(" ").length === 1
-                      ? cleaned_text || metadata.title || url
-                      : metadata.title || url}
-                  </h1>
+        .map(
+          ({ url, first_cast, rest_of_casts, last_cast, cleaned_text, hostname, metadata, last_timestamp }, index) => (
+            <div className="card col max-w" key={index}>
+              <button className="card--upvote">↑</button>
+              <span>
+                <Link target="_blank" href={`https://warpcast.com/${last_cast.author.fname}`}>
+                  <label>@{last_cast.author.fname}</label>
                 </Link>
-                <span className="line-3">{metadata.description}</span>
-                {rest_of_casts.length > 0 && (
-                  <p>
-                    <b style={{ color: "#408840" }}>More: </b>
-                    {rest_of_casts.map(({ author, hash }: any, i: number) => (
-                      <Fragment key={author.fid}>
-                        {i > 0 && <span>, </span>}
-                        <Link target="_blank" href={`https://warpcast.com/${author.fname}/0x${hash.slice(0, 6)}`}>
-                          <span>@{author.fname}</span>
-                        </Link>
-                      </Fragment>
-                    ))}
-                  </p>
+                <label style={{ margin: "0 .25rem", opacity: 0.5 }}>/</label>
+                <Link target="_blank" href={`https://${hostname}`}>
+                  <label>{hostname}</label>
+                </Link>
+                <Link
+                  target="_blank"
+                  href={`https://warpcast.com/${last_cast.author.fname}/0x${last_cast.hash.slice(0, 6)}`}
+                  style={{ marginLeft: ".5rem", color: "inherit", opacity: 0.66 }}
+                >
+                  View cast
+                </Link>
+              </span>
+              <div className="max-w row-sb-fs" style={{ gap: "1rem" }}>
+                <div className="col flex" style={{ gap: ".33rem" }}>
+                  <Link target="_blank" href={last_cast.embedded_urls[0]}>
+                    <h1 className="line-3">{cleaned_text || metadata.title || url}</h1>
+                  </Link>
+                  <span className="line-3">{metadata.description}</span>
+                  {rest_of_casts.length > 0 && (
+                    <p>
+                      <b style={{ color: "#408840" }}>More: </b>
+                      {rest_of_casts.map(({ author, hash }: any, i: number) => (
+                        <Fragment key={author.fid}>
+                          {i > 0 && <span>, </span>}
+                          <Link target="_blank" href={`https://warpcast.com/${author.fname}/0x${hash.slice(0, 6)}`}>
+                            <span>@{author.fname}</span>
+                          </Link>
+                        </Fragment>
+                      ))}
+                    </p>
+                  )}
+                  <span style={{ opacity: 0.66 }}>{dayjs(last_timestamp).fromNow()}</span>
+                </div>
+                {metadata.image && (
+                  <img
+                    alt="img"
+                    src={metadata.image}
+                    height={80}
+                    width={100}
+                    style={{
+                      objectFit: "cover",
+                    }}
+                  />
                 )}
-                <span style={{ opacity: 0.66 }}>{dayjs(last_timestamp).fromNow()}</span>
               </div>
-              {metadata.image && (
-                <img
-                  alt="img"
-                  src={metadata.image}
-                  height={80}
-                  width={100}
-                  style={{
-                    objectFit: "cover",
-                  }}
-                />
-              )}
             </div>
-          </div>
-        ))}
+          )
+        )}
     </main>
   );
 }

@@ -40,6 +40,7 @@ export async function processTrendingCasts(casts: any) {
           last_timestamp: rest[rest.length - 1].timestamp || first.timestamp,
           first_cast: first,
           rest_of_casts: rest,
+          last_cast: rest[rest.length - 1],
           cleaned_text,
           hostname: link_hostname,
           unique_authors: uniq(castsForKey.map((cast: any) => cast.author.fname)),

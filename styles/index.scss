@@ -44,17 +44,27 @@ h1 {
 
 .logo {
   @extend .row-fs-c;
-  background: #2a4a60;
-  color: #fff;
   font-size: 2rem;
-  padding-left: 0.5rem;
   font-weight: 700;
 
-  div {
+  div:nth-child(2) {
+    color: #2a4a60;
+    padding: 0 0.25rem;
+    margin-bottom: 0.5rem;
+    font-size: 2rem;
+    background: rgb(205, 211, 214);
+    padding-left: 0.5rem;
+    font-weight: 700;
+    border-radius: 0.33rem;
+  }
+  div:nth-child(1) {
     margin-left: 0.33rem;
-    background: rgb(87, 138, 161);
+    margin-top: 0.5rem;
     padding: 0 0.25rem;
     margin-bottom: 0.4rem;
+    border-radius: 0.33rem;
+    background: #2a4a60;
+    color: #f7f9f9;
   }
 }
 
@@ -162,8 +172,8 @@ nav {
 }
 
 .card {
-  gap: 0.33rem;
-  padding: 1rem 0 1rem 2rem;
+  gap: 0.25rem;
+  padding: 0.75rem 0 0.75rem 2rem;
   position: relative;
 
   &--upvote {

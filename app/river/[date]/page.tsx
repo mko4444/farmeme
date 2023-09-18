@@ -2,9 +2,7 @@
 import prisma from "@/lib/prisma";
 import Link from "next/link";
 import dayjs from "@/lib/day";
-import { Fragment } from "react";
 import { removeOrReplaceUrl } from "@/util/removeOrReplaceUrl";
-import { fetchPageMetadata } from "@/util/fetchPageMetadata";
 
 export default async function Home({
   params,
@@ -135,7 +133,7 @@ async function fetchData(date: string) {
       url,
       ...first_cast,
       hostname: url ? new URL(url).hostname : "",
-      text: removeOrReplaceUrl(first_cast.text),
+      text: removeOrReplaceUrl(first_cast?.text ?? ""),
     });
   }
 
