@@ -8,7 +8,7 @@ import { removeOrReplaceUrl } from "@/util/removeOrReplaceUrl";
 import { insertNamesAtPoints } from "@/util/insertNamesAtPoints";
 import { getHashUri } from "@/util/getHashUri";
 
-export const revalidate = 60;
+export const revalidate = 0;
 
 export default async function Home({ params: { term } }: { params: { term: string } }) {
   const data = await fetchData(decodeURIComponent(term));
@@ -20,7 +20,7 @@ export default async function Home({ params: { term } }: { params: { term: strin
         padding: "0 1rem",
       }}
     >
-      <h2>Results for &quot;{term}&quot;</h2>
+      <h2>{data?.length > 0 ? `Results for "${term}"` : `No results for "${term}"`}</h2>
       {data
         .sort(
           (a, b) =>
@@ -103,25 +103,31 @@ export default async function Home({ params: { term } }: { params: { term: strin
 }
 
 async function fetchData(term: string) {
+  console.log("searching for term: ", term);
   const casts = await prisma.cast.findMany({
     where: {
-      author: {
-        fname: { not: null },
-      },
       deleted_at: null,
-      text: {
-        contains: term,
-        mode: "insensitive",
-      },
-      NOT: [
-        ...["imgur.com", "warpcast.com"].map((contains: string) => ({
-          text: {
-            contains,
-          },
-        })),
+      OR: [
         {
-          embedded_urls: {
-            isEmpty: true,
+          text: {
+            contains: term,
+            mode: "insensitive",
+          },
+        },
+        {
+          author: {
+            fname: {
+              contains: term,
+              mode: "insensitive",
+            },
+          },
+        },
+        {
+          author: {
+            display_name: {
+              contains: term,
+              mode: "insensitive",
+            },
           },
         },
       ],
@@ -135,7 +141,8 @@ async function fetchData(term: string) {
       author: true,
       mentions: { select: { fid: true, fname: true } },
     },
-    take: 100,
+    take: 10,
   });
+  console.log("finished searching: ", term);
   return await processTrendingCasts(casts);
 }
