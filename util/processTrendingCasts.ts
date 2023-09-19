@@ -1,6 +1,5 @@
 import { uniq } from "lodash";
 import { fetchPageMetadata } from "./fetchPageMetadata";
-import { removeOrReplaceUrl } from "./removeOrReplaceUrl";
 
 export async function processTrendingCasts(casts: any) {
   const uniqueUrlsWithCasts: any = {};
@@ -32,7 +31,6 @@ export async function processTrendingCasts(casts: any) {
         );
         const [first, ...rest] = castsForKey.sort((a: any, b: any) => a.timestamp - b.timestamp);
         const link_hostname = new URL(key).hostname;
-        const cleaned_text = removeOrReplaceUrl(first.text);
         const metadata = await fetchPageMetadata(key);
 
         return {
@@ -41,7 +39,6 @@ export async function processTrendingCasts(casts: any) {
           first_cast: first,
           rest_of_casts: rest,
           last_cast: rest[rest.length - 1],
-          cleaned_text,
           hostname: link_hostname,
           unique_authors: uniq(castsForKey.map((cast: any) => cast.author.fname)),
           metadata,

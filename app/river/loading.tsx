@@ -1,7 +1,7 @@
 export default async function Loading() {
   return (
     <main className="main">
-      <h2>Loading news...</h2>
+      <h2 style={{ padding: "1rem" }}>Loading news...</h2>
     </main>
   );
 }

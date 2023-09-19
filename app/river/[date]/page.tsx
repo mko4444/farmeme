@@ -3,6 +3,7 @@ import prisma from "@/lib/prisma";
 import Link from "next/link";
 import dayjs from "@/lib/day";
 import { removeOrReplaceUrl } from "@/util/removeOrReplaceUrl";
+import { insertNamesAtPoints } from "@/util/insertNamesAtPoints";
 
 export default async function Home({
   params,
@@ -17,11 +18,13 @@ export default async function Home({
 
   return (
     <main className="river">
-      <div className="row-fs-c" style={{ padding: "1rem .5rem", gap: ".5rem" }}>
+      <div className="row-fs-c max-w" style={{ padding: "1rem", gap: ".5rem" }}>
         <h2 style={{ padding: 0 }}>{dayjs(date).format("dddd, MMMM D")}</h2>
         <div />
         <Link href={`/river/${dayjs(date).subtract(1, "day").format("YYYY-MM-DD")}`}>
-          <button className="arrow-btn">←</button>
+          <button className="arrow-btn" style={{ minWidth: "1.5rem", borderRadius: 100 }}>
+            ←
+          </button>
         </Link>
         <Link
           style={{
@@ -30,13 +33,15 @@ export default async function Home({
           }}
           href={`/river/${dayjs(date).add(1, "day").format("YYYY-MM-DD")}`}
         >
-          <button className="arrow-btn">→</button>
+          <button className="arrow-btn" style={{ minWidth: "1.5rem", borderRadius: 100 }}>
+            →
+          </button>
         </Link>
       </div>
       {data
         .filter(({ timestamp }: any) => dayjs(timestamp).isSame(date, "day"))
-        .map(({ timestamp, hash, author, text, hostname, url }: any) => (
-          <div className="card row" key={hash}>
+        .map(({ timestamp, hash, author, text, hostname, url, mention_fids, mentions, mentions_positions }: any) => (
+          <div className="card row" key={hash} style={{ padding: ".5rem 1rem" }}>
             <label
               style={{
                 fontWeight: 400,
@@ -46,7 +51,7 @@ export default async function Home({
               {dayjs(timestamp).format("h:mm A")}
             </label>
             <p
-              className="flex"
+              className="line-1 flex"
               style={{
                 lineHeight: "1.25",
               }}
@@ -68,13 +73,13 @@ export default async function Home({
                     lineHeight: "1.25",
                   }}
                 >
-                  {text || url}
+                  {removeOrReplaceUrl(insertNamesAtPoints(text, mention_fids, mentions_positions, mentions)) || url}
                 </h1>
               </Link>
               <Link
                 target="_blank"
-                href={`https://warpcast.com/${author.fname}/0x${hash.slice(0, 6)}`}
-                style={{ marginLeft: ".5rem", color: "inherit", opacity: 0.66 }}
+                href={`https://warpcast.com/${author.fname}/${hash.slice(0, 6)}`}
+                style={{ marginLeft: ".5rem", color: "inherit", opacity: 0.66, whiteSpace: "nowrap" }}
               >
                 View cast
               </Link>
@@ -88,6 +93,9 @@ export default async function Home({
 async function fetchData(date: string) {
   const casts = await prisma.cast.findMany({
     where: {
+      author: {
+        fname: { not: null },
+      },
       timestamp: {
         gt: dayjs(date).startOf("day").toDate(),
       },
@@ -103,6 +111,7 @@ async function fetchData(date: string) {
     },
     include: {
       author: true,
+      mentions: { select: { fid: true, fname: true } },
     },
     orderBy: {
       timestamp: "desc",
