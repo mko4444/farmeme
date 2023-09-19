@@ -126,11 +126,16 @@ async function fetchData(term: string) {
         },
       ],
     },
+    orderBy: {
+      replies: {
+        _count: "desc",
+      },
+    },
     include: {
       author: true,
       mentions: { select: { fid: true, fname: true } },
     },
+    take: 100,
   });
-
   return await processTrendingCasts(casts);
 }
