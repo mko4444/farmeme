@@ -10,7 +10,7 @@ import { getHashUri } from "@/util/getHashUri";
 
 const lastDate = dayjs().startOf("day").subtract(3, "day").toDate();
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 export default async function Home() {
   const data = await fetchData();
