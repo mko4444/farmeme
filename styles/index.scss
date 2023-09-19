@@ -28,7 +28,7 @@ a {
 h2 {
   font-size: 1.33rem;
   color: #455;
-  padding: 1rem 2rem;
+  padding: 1rem 0;
 }
 
 h1 {
@@ -143,7 +143,7 @@ nav {
 
   background: #2a4a60;
   gap: 0.25rem;
-  padding: 0 1.5rem;
+  padding: 0 0.5rem;
   height: auto;
   text-transform: uppercase;
 
@@ -173,40 +173,8 @@ nav {
 
 .card {
   gap: 0.25rem;
-  padding: 0.75rem 0 0.75rem 2rem;
+  padding: 0.75rem 0;
   position: relative;
-
-  &--upvote {
-    height: calc(100% - 2rem);
-    position: absolute;
-    width: 1.5rem;
-    top: 1rem;
-    left: -0.25rem;
-    padding: 0;
-    background: #d8dfe3;
-    border: 1px solid #a3afb7;
-    font-size: 2rem;
-    color: rgba(0, 72, 96, 0.66);
-    font-size: 0.66rem;
-    border-radius: 0.25rem;
-    opacity: 0;
-    transition: all 150ms;
-    z-index: 999;
-
-    &:hover {
-      opacity: 0.9 !important;
-    }
-
-    &:active {
-      opacity: 0.8 !important;
-    }
-  }
-
-  &:hover {
-    .card--upvote {
-      opacity: 1;
-    }
-  }
 
   a:hover {
     h1,

@@ -5,7 +5,9 @@ import dayjs from "@/lib/day";
 import { Fragment } from "react";
 import { processTrendingCasts } from "@/util/processTrendingCasts";
 
-const lastDate = dayjs().startOf("day").subtract(1, "day").toDate();
+const lastDate = dayjs().startOf("day").subtract(3, "day").toDate();
+
+export const revalidate = 0;
 
 export default async function Home() {
   const data = await fetchData();
@@ -25,9 +27,8 @@ export default async function Home() {
             b.unique_authors.length - a.unique_authors.length || b.last_timestamp - a.last_timestamp
         )
         .map(
-          ({ url, first_cast, rest_of_casts, last_cast, cleaned_text, hostname, metadata, last_timestamp }, index) => (
+          ({ url, rest_of_casts, last_cast, first_cast, cleaned_text, hostname, metadata, last_timestamp }, index) => (
             <div className="card col max-w" key={index}>
-              <button className="card--upvote">↑</button>
               <span>
                 <Link target="_blank" href={`https://warpcast.com/${last_cast.author.fname}`}>
                   <label>@{last_cast.author.fname}</label>
@@ -53,14 +54,19 @@ export default async function Home() {
                   {rest_of_casts.length > 0 && (
                     <p>
                       <b style={{ color: "#408840" }}>More: </b>
-                      {rest_of_casts.map(({ author, hash }: any, i: number) => (
-                        <Fragment key={author.fid}>
-                          {i > 0 && <span>, </span>}
-                          <Link target="_blank" href={`https://warpcast.com/${author.fname}/0x${hash.slice(0, 6)}`}>
-                            <span>@{author.fname}</span>
-                          </Link>
-                        </Fragment>
-                      ))}
+                      {rest_of_casts
+                        .filter((f: any) => f.author.fname !== first_cast?.author?.fname)
+                        .map(({ author, hash }: any, i: number) => {
+                          console.log(hash, first_cast.author, author);
+                          return (
+                            <Fragment key={author.fid}>
+                              {i > 0 && <span>, </span>}
+                              <Link target="_blank" href={`https://warpcast.com/${author.fname}/0x${hash.slice(0, 6)}`}>
+                                <span>@{author.fname}</span>
+                              </Link>
+                            </Fragment>
+                          );
+                        })}
                     </p>
                   )}
                   <span style={{ opacity: 0.66 }}>{dayjs(last_timestamp).fromNow()}</span>

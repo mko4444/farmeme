@@ -19,7 +19,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body className={font.className}>
-        {/* <header className="header--top row-sb-c">
+        <header className="header--top row-sb-c">
           <div className="col-on-mobile row-fs-c" style={{ gap: ".5rem" }}>
             <Link href="https://warpcast.com/matthew">
               <label>A joke / useful site made by @matthew</label>
@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <button>Search</button>
           </div>
         </header>
-        <Nav /> */}
+        <Nav />
         {children}
       </body>
     </html>
