@@ -7,7 +7,6 @@ export default function Searchbar() {
 
   function onSubmit(e: any) {
     e.preventDefault();
-    console.log(e.target[0].value);
     return push(`/search/${encodeURIComponent(e.target[0].value)}`);
   }
 
