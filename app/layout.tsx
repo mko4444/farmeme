@@ -4,6 +4,7 @@ import "@/styles/index.scss";
 import dayjs from "dayjs";
 import Link from "next/link";
 import Nav from "./nav";
+import Searchbar from "./searchbar";
 
 const font = Arsenal({
   subsets: ["latin"],
@@ -36,10 +37,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <div className="header--main--middle max-w col-c-c">
             <span>{dayjs().format("MMMM D, YYYY, h:mm A")}</span>
           </div>
-          <div className="header--main--search row-c-c" style={{ width: 200 }}>
-            <input placeholder="Search Farmeme..." />
-            <button>Search</button>
-          </div>
+          <Searchbar />
         </header>
         <Nav />
         {children}

@@ -8,12 +8,10 @@ import { removeOrReplaceUrl } from "@/util/removeOrReplaceUrl";
 import { insertNamesAtPoints } from "@/util/insertNamesAtPoints";
 import { getHashUri } from "@/util/getHashUri";
 
-const lastDate = dayjs().startOf("day").subtract(3, "day").toDate();
+export const revalidate = 60;
 
-export const revalidate = 0;
-
-export default async function Home() {
-  const data = await fetchData();
+export default async function Home({ params: { term } }: { params: { term: string } }) {
+  const data = await fetchData(term);
 
   return (
     <main
@@ -22,7 +20,7 @@ export default async function Home() {
         padding: "0 1rem",
       }}
     >
-      <h2>Top News</h2>
+      <h2>Results for &quot;{term}&quot;</h2>
       {data
         .sort(
           (a, b) =>
@@ -32,7 +30,7 @@ export default async function Home() {
         .map(({ url, rest_of_casts, last_cast, first_cast, hostname, metadata, last_timestamp }, index) => (
           <div className="card col max-w" key={index}>
             <span>
-              <Link target="_blank" href={`https://warpcast.com/${first_cast.author.fname}`}>
+              <Link target="_blank" href={`https://warpcast.com/${last_cast.author.fname}`}>
                 <label>@{first_cast.author.fname}</label>
               </Link>
               <label style={{ margin: "0 .25rem", opacity: 0.5 }}>/</label>
@@ -41,7 +39,7 @@ export default async function Home() {
               </Link>
               <Link
                 target="_blank"
-                href={`https://warpcast.com/${first_cast.author.fname}/${getHashUri(first_cast.hash)}`}
+                href={`https://warpcast.com/${last_cast.author.fname}/${getHashUri(last_cast.hash)}`}
                 style={{ marginLeft: ".5rem", color: "inherit", opacity: 0.66 }}
               >
                 View cast
@@ -72,7 +70,12 @@ export default async function Home() {
                       .map(({ author, hash }: any, i: number) => (
                         <Fragment key={author.fid}>
                           {i > 0 && <span>, </span>}
-                          <Link target="_blank" href={`https://warpcast.com/${author.fname}/${getHashUri(hash)}`}>
+                          <Link
+                            target="_blank"
+                            href={`https://warpcast.com/${author.fname}/${
+                              hash.startsWith("0x") ? hash.slice(0, 8) : `0x${getHashUri(hash)}`
+                            }`}
+                          >
                             <span>@{author.fname}</span>
                           </Link>
                         </Fragment>
@@ -99,24 +102,29 @@ export default async function Home() {
   );
 }
 
-async function fetchData() {
+async function fetchData(term: string) {
   const casts = await prisma.cast.findMany({
     where: {
       author: {
         fname: { not: null },
       },
-      timestamp: {
-        gt: lastDate,
-      },
       deleted_at: null,
       text: {
-        contains: "http",
+        contains: term,
+        mode: "insensitive",
       },
-      NOT: ["imgur.com", "warpcast.com"].map((contains: string) => ({
-        text: {
-          contains,
+      NOT: [
+        ...["imgur.com", "warpcast.com"].map((contains: string) => ({
+          text: {
+            contains,
+          },
+        })),
+        {
+          embedded_urls: {
+            isEmpty: true,
+          },
         },
-      })),
+      ],
     },
     include: {
       author: true,

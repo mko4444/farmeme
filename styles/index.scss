@@ -38,7 +38,6 @@ h1 {
   color: rgb(0, 72, 96);
   text-decoration: none;
   text-transform: none;
-  line-height: 1.66rem;
   word-break: break-word;
 }
 
@@ -102,6 +101,7 @@ h1 {
       position: absolute;
       margin: 0 auto;
       left: 0;
+      pointer-events: none;
 
       @include mobile {
         left: auto;
@@ -132,6 +132,7 @@ h1 {
           color: rgb(154, 154, 154);
           font-size: inherit;
           font-family: inherit;
+          pointer-events: none;
         }
       }
     }
