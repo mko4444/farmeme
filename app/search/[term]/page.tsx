@@ -11,7 +11,7 @@ import { getHashUri } from "@/util/getHashUri";
 export const revalidate = 60;
 
 export default async function Home({ params: { term } }: { params: { term: string } }) {
-  const data = await fetchData(term);
+  const data = await fetchData(decodeURIComponent(term));
 
   return (
     <main
