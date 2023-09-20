@@ -103,34 +103,17 @@ export default async function Home({ params: { term } }: { params: { term: strin
 }
 
 async function fetchData(term: string) {
-  console.log("searching for term: ", term);
   const casts = await prisma.cast.findMany({
     where: {
-      deleted_at: null,
-      OR: [
-        {
-          text: {
-            contains: term,
-            mode: "insensitive",
-          },
+      author: {
+        fname: {
+          not: null,
         },
-        {
-          author: {
-            fname: {
-              contains: term,
-              mode: "insensitive",
-            },
-          },
-        },
-        {
-          author: {
-            display_name: {
-              contains: term,
-              mode: "insensitive",
-            },
-          },
-        },
-      ],
+      },
+      text: {
+        contains: term,
+        mode: "insensitive",
+      },
     },
     orderBy: {
       replies: {
@@ -143,6 +126,5 @@ async function fetchData(term: string) {
     },
     take: 10,
   });
-  console.log("finished searching: ", term);
   return await processTrendingCasts(casts);
 }
