@@ -14,6 +14,21 @@ const font = Arsenal({
 export const metadata: Metadata = {
   title: "Farmeme",
   description: "Recent news on Farcaster",
+  icons: {
+    icon: "/favicon.ico",
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_US",
+    url: "https://farmeme.com",
+    images: [
+      {
+        url: "/favicon.ico",
+        width: 600,
+        height: 600,
+      },
+    ],
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
