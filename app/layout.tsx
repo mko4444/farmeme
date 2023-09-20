@@ -50,7 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </Link>
           </div>
           <div className="header--main--middle max-w col-c-c">
-            <span>{dayjs().format("MMMM D, YYYY, h:mm A Z")}</span>
+            <span>{dayjs().format("MMMM D, YYYY, h:mm A z")}</span>
           </div>
           <Searchbar />
         </header>
