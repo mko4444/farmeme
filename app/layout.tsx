@@ -15,7 +15,7 @@ export const metadata: Metadata = {
   title: "Farmeme",
   description: "Recent news on Farcaster",
   icons: {
-    icon: "/favicon.ico",
+    icon: "/favicon.png",
   },
   openGraph: {
     type: "website",
@@ -23,7 +23,7 @@ export const metadata: Metadata = {
     url: "https://farmeme.com",
     images: [
       {
-        url: "/favicon.ico",
+        url: "/favicon.png",
         width: 600,
         height: 600,
       },
