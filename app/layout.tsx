@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Arsenal } from "next/font/google";
 import "@/styles/index.scss";
-import dayjs from "dayjs";
+import dayjs from "@/lib/day";
 import Link from "next/link";
 import Nav from "./nav";
 import Searchbar from "./searchbar";
