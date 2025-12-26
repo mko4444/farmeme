@@ -1,15 +1,9 @@
 import type { Metadata } from "next";
-import { Arsenal } from "next/font/google";
 import "@/styles/index.scss";
 import dayjs from "@/lib/day";
 import Link from "next/link";
 import Nav from "./nav";
 import Searchbar from "./searchbar";
-
-const font = Arsenal({
-  subsets: ["latin"],
-  weight: ["400", "700"],
-});
 
 export const metadata: Metadata = {
   title: "Farmeme",
@@ -34,7 +28,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className={font.className}>
+      <body>
         <header className="header--top row-sb-c">
           <div className="col-on-mobile row-fs-c" style={{ gap: ".5rem" }}>
             <Link href="https://warpcast.com/matthew">

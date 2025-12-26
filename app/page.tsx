@@ -1,14 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
-import prisma from "@/lib/prisma";
 import Link from "next/link";
 import dayjs from "@/lib/day";
 import { Fragment } from "react";
+import { getTrendingCastsWithUrls } from "@/lib/neynar";
 import { processTrendingCasts } from "@/util/processTrendingCasts";
 import { removeOrReplaceUrl } from "@/util/removeOrReplaceUrl";
 import { insertNamesAtPoints } from "@/util/insertNamesAtPoints";
 import { getHashUri } from "@/util/getHashUri";
-
-const lastDate = dayjs().startOf("day").subtract(3, "day").toDate();
 
 export const revalidate = 60;
 
@@ -23,6 +21,11 @@ export default async function Home() {
       }}
     >
       <h2>Top News</h2>
+      {data.length === 0 && (
+        <div style={{ padding: "1rem", opacity: 0.66 }}>
+          No trending news found. Set NEYNAR_API_KEY for real data.
+        </div>
+      )}
       {data
         .sort(
           (a, b) =>
@@ -99,30 +102,126 @@ export default async function Home() {
   );
 }
 
-async function fetchData() {
-  const casts = await prisma.cast.findMany({
-    where: {
-      author: {
-        fname: { not: null },
-      },
-      timestamp: {
-        gt: lastDate,
-      },
-      deleted_at: null,
-      text: {
-        contains: "http",
-      },
-      NOT: ["imgur.com", "warpcast.com"].map((contains: string) => ({
-        text: {
-          contains,
-        },
-      })),
-    },
-    include: {
-      author: true,
-      mentions: { select: { fid: true, fname: true } },
-    },
-  });
+// Mock data fallback when API key is not configured
+const mockCasts = [
+  // Story 1: Tech news (3 authors)
+  {
+    hash: "0x123abc456def",
+    text: "Breaking: Major tech announcement today! https://techcrunch.com/big-news",
+    timestamp: new Date(Date.now() - 1000 * 60 * 30),
+    fid: 1,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://techcrunch.com/big-news"],
+    deleted_at: null,
+    author: { fid: 1, fname: "alice", display_name: "Alice", pfp_url: null },
+    mentions: [],
+  },
+  {
+    hash: "0x789ghi012jkl",
+    text: "This is incredible news https://techcrunch.com/big-news",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60),
+    fid: 2,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://techcrunch.com/big-news"],
+    deleted_at: null,
+    author: { fid: 2, fname: "bob", display_name: "Bob", pfp_url: null },
+    mentions: [],
+  },
+  {
+    hash: "0xabc123def456",
+    text: "Everyone needs to see this https://techcrunch.com/big-news",
+    timestamp: new Date(Date.now() - 1000 * 60 * 90),
+    fid: 3,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://techcrunch.com/big-news"],
+    deleted_at: null,
+    author: { fid: 3, fname: "charlie", display_name: "Charlie", pfp_url: null },
+    mentions: [],
+  },
+  // Story 2: Crypto news (2 authors)
+  {
+    hash: "0xdef456ghi789",
+    text: "New research on L2 scaling https://ethereum.org/research",
+    timestamp: new Date(Date.now() - 1000 * 60 * 45),
+    fid: 4,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://ethereum.org/research"],
+    deleted_at: null,
+    author: { fid: 4, fname: "vitalik", display_name: "Vitalik", pfp_url: null },
+    mentions: [],
+  },
+  {
+    hash: "0xghi789jkl012",
+    text: "Important findings here https://ethereum.org/research",
+    timestamp: new Date(Date.now() - 1000 * 60 * 120),
+    fid: 5,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://ethereum.org/research"],
+    deleted_at: null,
+    author: { fid: 5, fname: "dwr", display_name: "Dan", pfp_url: null },
+    mentions: [],
+  },
+  // Story 3: Farcaster news (2 authors)
+  {
+    hash: "0xjkl012mno345",
+    text: "Farcaster hits 1M users! https://farcaster.xyz/blog/milestone",
+    timestamp: new Date(Date.now() - 1000 * 60 * 15),
+    fid: 6,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://farcaster.xyz/blog/milestone"],
+    deleted_at: null,
+    author: { fid: 6, fname: "jesse", display_name: "Jesse", pfp_url: null },
+    mentions: [],
+  },
+  {
+    hash: "0xmno345pqr678",
+    text: "Congrats to the whole team https://farcaster.xyz/blog/milestone",
+    timestamp: new Date(Date.now() - 1000 * 60 * 25),
+    fid: 7,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://farcaster.xyz/blog/milestone"],
+    deleted_at: null,
+    author: { fid: 7, fname: "varun", display_name: "Varun", pfp_url: null },
+    mentions: [],
+  },
+];
 
-  return await processTrendingCasts(casts);
+async function fetchData() {
+  const apiKey = process.env.NEYNAR_API_KEY;
+
+  if (!apiKey) {
+    console.warn("[Neynar] No API key configured, using mock data. Set NEYNAR_API_KEY env var.");
+    return await processTrendingCasts(mockCasts);
+  }
+
+  try {
+    // Fetch trending casts from the last 24 hours, ranked by engagement
+    const casts = await getTrendingCastsWithUrls({
+      timeWindow: "24h",
+      limit: 100,
+      apiKey,
+    });
+
+    // Filter out unwanted domains
+    const filteredCasts = casts.filter((cast) => {
+      const hasBlockedDomain = cast.embedded_urls.some((url) =>
+        ["imgur.com", "warpcast.com", "far.quest", "farquest.app"].some((blocked) =>
+          url.toLowerCase().includes(blocked)
+        )
+      );
+      return !hasBlockedDomain && cast.author.fname;
+    });
+
+    return await processTrendingCasts(filteredCasts);
+  } catch (error) {
+    console.error("[Neynar] API error, falling back to mock data:", error);
+    return await processTrendingCasts(mockCasts);
+  }
 }
