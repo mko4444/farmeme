@@ -196,6 +196,8 @@ const mockCasts = [
 async function fetchData() {
   const apiKey = process.env.NEYNAR_API_KEY;
 
+  console.log("[Neynar] API key configured:", apiKey ? `Yes (${apiKey.slice(0, 8)}...)` : "No");
+
   if (!apiKey) {
     console.warn("[Neynar] No API key configured, using mock data. Set NEYNAR_API_KEY env var.");
     return await processTrendingCasts(mockCasts);
