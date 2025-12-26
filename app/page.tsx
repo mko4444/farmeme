@@ -21,6 +21,11 @@ export default async function Home() {
       }}
     >
       <h2>Top News</h2>
+      {data.length === 0 && (
+        <div style={{ padding: "1rem", opacity: 0.66 }}>
+          No trending news found. Set NEYNAR_API_KEY for real data.
+        </div>
+      )}
       {data
         .sort(
           (a, b) =>
@@ -99,40 +104,91 @@ export default async function Home() {
 
 // Mock data fallback when API key is not configured
 const mockCasts = [
+  // Story 1: Tech news (3 authors)
   {
     hash: "0x123abc456def",
-    text: "Breaking: Major tech announcement today! https://example.com/tech-news",
+    text: "Breaking: Major tech announcement today! https://techcrunch.com/big-news",
     timestamp: new Date(Date.now() - 1000 * 60 * 30),
     fid: 1,
     mentions_positions: [],
     mention_fids: [],
-    embedded_urls: ["https://example.com/tech-news"],
+    embedded_urls: ["https://techcrunch.com/big-news"],
     deleted_at: null,
     author: { fid: 1, fname: "alice", display_name: "Alice", pfp_url: null },
     mentions: [],
   },
   {
     hash: "0x789ghi012jkl",
-    text: "This is incredible news for the community https://example.com/tech-news",
+    text: "This is incredible news https://techcrunch.com/big-news",
     timestamp: new Date(Date.now() - 1000 * 60 * 60),
     fid: 2,
     mentions_positions: [],
     mention_fids: [],
-    embedded_urls: ["https://example.com/tech-news"],
+    embedded_urls: ["https://techcrunch.com/big-news"],
     deleted_at: null,
     author: { fid: 2, fname: "bob", display_name: "Bob", pfp_url: null },
     mentions: [],
   },
   {
     hash: "0xabc123def456",
-    text: "Great discussion on this topic https://example.com/tech-news",
+    text: "Everyone needs to see this https://techcrunch.com/big-news",
     timestamp: new Date(Date.now() - 1000 * 60 * 90),
     fid: 3,
     mentions_positions: [],
     mention_fids: [],
-    embedded_urls: ["https://example.com/tech-news"],
+    embedded_urls: ["https://techcrunch.com/big-news"],
     deleted_at: null,
     author: { fid: 3, fname: "charlie", display_name: "Charlie", pfp_url: null },
+    mentions: [],
+  },
+  // Story 2: Crypto news (2 authors)
+  {
+    hash: "0xdef456ghi789",
+    text: "New research on L2 scaling https://ethereum.org/research",
+    timestamp: new Date(Date.now() - 1000 * 60 * 45),
+    fid: 4,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://ethereum.org/research"],
+    deleted_at: null,
+    author: { fid: 4, fname: "vitalik", display_name: "Vitalik", pfp_url: null },
+    mentions: [],
+  },
+  {
+    hash: "0xghi789jkl012",
+    text: "Important findings here https://ethereum.org/research",
+    timestamp: new Date(Date.now() - 1000 * 60 * 120),
+    fid: 5,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://ethereum.org/research"],
+    deleted_at: null,
+    author: { fid: 5, fname: "dwr", display_name: "Dan", pfp_url: null },
+    mentions: [],
+  },
+  // Story 3: Farcaster news (2 authors)
+  {
+    hash: "0xjkl012mno345",
+    text: "Farcaster hits 1M users! https://farcaster.xyz/blog/milestone",
+    timestamp: new Date(Date.now() - 1000 * 60 * 15),
+    fid: 6,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://farcaster.xyz/blog/milestone"],
+    deleted_at: null,
+    author: { fid: 6, fname: "jesse", display_name: "Jesse", pfp_url: null },
+    mentions: [],
+  },
+  {
+    hash: "0xmno345pqr678",
+    text: "Congrats to the whole team https://farcaster.xyz/blog/milestone",
+    timestamp: new Date(Date.now() - 1000 * 60 * 25),
+    fid: 7,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://farcaster.xyz/blog/milestone"],
+    deleted_at: null,
+    author: { fid: 7, fname: "varun", display_name: "Varun", pfp_url: null },
     mentions: [],
   },
 ];
