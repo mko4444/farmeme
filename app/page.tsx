@@ -1,14 +1,12 @@
 /* eslint-disable @next/next/no-img-element */
-import prisma from "@/lib/prisma";
 import Link from "next/link";
 import dayjs from "@/lib/day";
 import { Fragment } from "react";
+import { getTrendingCastsWithUrls } from "@/lib/neynar";
 import { processTrendingCasts } from "@/util/processTrendingCasts";
 import { removeOrReplaceUrl } from "@/util/removeOrReplaceUrl";
 import { insertNamesAtPoints } from "@/util/insertNamesAtPoints";
 import { getHashUri } from "@/util/getHashUri";
-
-const lastDate = dayjs().startOf("day").subtract(3, "day").toDate();
 
 export const revalidate = 60;
 
@@ -99,30 +97,75 @@ export default async function Home() {
   );
 }
 
-async function fetchData() {
-  const casts = await prisma.cast.findMany({
-    where: {
-      author: {
-        fname: { not: null },
-      },
-      timestamp: {
-        gt: lastDate,
-      },
-      deleted_at: null,
-      text: {
-        contains: "http",
-      },
-      NOT: ["imgur.com", "warpcast.com"].map((contains: string) => ({
-        text: {
-          contains,
-        },
-      })),
-    },
-    include: {
-      author: true,
-      mentions: { select: { fid: true, fname: true } },
-    },
-  });
+// Mock data fallback when API key is not configured
+const mockCasts = [
+  {
+    hash: "0x123abc456def",
+    text: "Breaking: Major tech announcement today! https://example.com/tech-news",
+    timestamp: new Date(Date.now() - 1000 * 60 * 30),
+    fid: 1,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://example.com/tech-news"],
+    deleted_at: null,
+    author: { fid: 1, fname: "alice", display_name: "Alice", pfp_url: null },
+    mentions: [],
+  },
+  {
+    hash: "0x789ghi012jkl",
+    text: "This is incredible news for the community https://example.com/tech-news",
+    timestamp: new Date(Date.now() - 1000 * 60 * 60),
+    fid: 2,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://example.com/tech-news"],
+    deleted_at: null,
+    author: { fid: 2, fname: "bob", display_name: "Bob", pfp_url: null },
+    mentions: [],
+  },
+  {
+    hash: "0xabc123def456",
+    text: "Great discussion on this topic https://example.com/tech-news",
+    timestamp: new Date(Date.now() - 1000 * 60 * 90),
+    fid: 3,
+    mentions_positions: [],
+    mention_fids: [],
+    embedded_urls: ["https://example.com/tech-news"],
+    deleted_at: null,
+    author: { fid: 3, fname: "charlie", display_name: "Charlie", pfp_url: null },
+    mentions: [],
+  },
+];
 
-  return await processTrendingCasts(casts);
+async function fetchData() {
+  const apiKey = process.env.NEYNAR_API_KEY;
+
+  if (!apiKey) {
+    console.warn("[Neynar] No API key configured, using mock data. Set NEYNAR_API_KEY env var.");
+    return await processTrendingCasts(mockCasts);
+  }
+
+  try {
+    // Fetch trending casts from the last 24 hours, ranked by engagement
+    const casts = await getTrendingCastsWithUrls({
+      timeWindow: "24h",
+      limit: 100,
+      apiKey,
+    });
+
+    // Filter out unwanted domains
+    const filteredCasts = casts.filter((cast) => {
+      const hasBlockedDomain = cast.embedded_urls.some((url) =>
+        ["imgur.com", "warpcast.com", "far.quest", "farquest.app"].some((blocked) =>
+          url.toLowerCase().includes(blocked)
+        )
+      );
+      return !hasBlockedDomain && cast.author.fname;
+    });
+
+    return await processTrendingCasts(filteredCasts);
+  } catch (error) {
+    console.error("[Neynar] API error, falling back to mock data:", error);
+    return await processTrendingCasts(mockCasts);
+  }
 }

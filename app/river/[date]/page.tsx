@@ -1,9 +1,9 @@
 /* eslint-disable @next/next/no-img-element */
-import prisma from "@/lib/prisma";
 import Link from "next/link";
 import dayjs from "@/lib/day";
 import { removeOrReplaceUrl } from "@/util/removeOrReplaceUrl";
 import { insertNamesAtPoints } from "@/util/insertNamesAtPoints";
+import { getTrendingCastsWithUrls, type TimeWindow } from "@/lib/neynar";
 
 export default async function Home({
   params,
@@ -78,7 +78,7 @@ export default async function Home({
               </Link>
               <Link
                 target="_blank"
-                href={`https://warpcast.com/${author.fname}/${hash.slice(0, 6)}`}
+                href={`https://warpcast.com/${author.fname}/${hash.slice(0, 10)}`}
                 style={{ marginLeft: ".5rem", color: "inherit", opacity: 0.66, whiteSpace: "nowrap" }}
               >
                 View cast
@@ -86,65 +86,92 @@ export default async function Home({
             </p>
           </div>
         ))}
+      {data.length === 0 && (
+        <div style={{ padding: "1rem", opacity: 0.66 }}>
+          No casts with links found for this date. Try a more recent date.
+        </div>
+      )}
     </main>
   );
 }
 
 async function fetchData(date: string) {
-  const casts = await prisma.cast.findMany({
-    where: {
-      author: {
-        fname: { not: null },
-      },
-      timestamp: {
-        gt: dayjs(date).startOf("day").toDate(),
-      },
-      deleted_at: null,
-      text: {
-        contains: "http",
-      },
-      NOT: ["imgur.com", "warpcast.com"].map((contains: string) => ({
-        text: {
-          contains,
-        },
-      })),
-    },
-    include: {
-      author: true,
-      mentions: { select: { fid: true, fname: true } },
-    },
-    orderBy: {
-      timestamp: "desc",
-    },
-  });
+  const apiKey = process.env.NEYNAR_API_KEY;
+  const requestedDate = dayjs(date).startOf("day");
+  const today = dayjs().startOf("day");
 
-  const reversed_casts = casts.reverse();
-  const unique_urls: string[] = [];
-  const url_arr: object[] = [];
+  // Calculate days ago to determine time window
+  const daysAgo = today.diff(requestedDate, "day");
 
-  for (const cast of casts) {
-    for (const url of cast.embedded_urls) {
-      if (url.includes("chain://")) continue;
-      if (url.includes("localhost")) continue;
-      if (url.includes("imgur.com")) continue;
-      if (url.includes("warpcast.com")) continue;
-      if (url.includes("farquest")) continue;
+  if (!apiKey) {
+    console.warn("[Neynar] No API key configured for river");
+    return [];
+  }
 
-      if (!unique_urls.includes(url)) {
-        unique_urls.push(url);
+  // Neynar only supports up to 7d or 30d windows
+  // For older dates, we can't fetch data
+  if (daysAgo > 7) {
+    console.warn("[Neynar] Date too far in past, max 7 days supported");
+    return [];
+  }
+
+  try {
+    // Determine appropriate time window
+    let timeWindow: TimeWindow = "24h";
+    if (daysAgo >= 1) timeWindow = "7d";
+
+    const casts = await getTrendingCastsWithUrls({
+      timeWindow,
+      limit: 100,
+      apiKey,
+    });
+
+    // Filter to only casts from the requested date
+    const castsForDate = casts.filter((cast) =>
+      dayjs(cast.timestamp).isSame(requestedDate, "day")
+    );
+
+    // Filter out unwanted domains
+    const filteredCasts = castsForDate.filter((cast) => {
+      const hasBlockedDomain = cast.embedded_urls.some((url) =>
+        ["chain://", "localhost", "imgur.com", "warpcast.com", "farquest"].some(
+          (blocked) => url.toLowerCase().includes(blocked)
+        )
+      );
+      return !hasBlockedDomain;
+    });
+
+    // Get unique URLs and their first casts
+    const unique_urls: string[] = [];
+    const url_arr: object[] = [];
+
+    // Sort by timestamp ascending
+    const sortedCasts = filteredCasts.sort(
+      (a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime()
+    );
+
+    for (const cast of sortedCasts) {
+      for (const url of cast.embedded_urls) {
+        if (!unique_urls.includes(url)) {
+          unique_urls.push(url);
+          url_arr.push({
+            url,
+            hash: cast.hash,
+            timestamp: cast.timestamp,
+            author: cast.author,
+            text: cast.text,
+            mention_fids: cast.mention_fids,
+            mentions: cast.mentions,
+            mentions_positions: cast.mentions_positions,
+            hostname: new URL(url).hostname,
+          });
+        }
       }
     }
-  }
 
-  for await (const url of unique_urls) {
-    let first_cast = reversed_casts.find((cast) => cast.embedded_urls.includes(url));
-    url_arr.push({
-      url,
-      ...first_cast,
-      hostname: url ? new URL(url).hostname : "",
-      text: removeOrReplaceUrl(first_cast?.text ?? ""),
-    });
+    return url_arr;
+  } catch (error) {
+    console.error("[Neynar] River fetch error:", error);
+    return [];
   }
-
-  return url_arr.reverse();
 }
