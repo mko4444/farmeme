@@ -46,27 +46,33 @@ export async function fetchTrendingCasts(options: {
   url.searchParams.set("time_window", timeWindow);
   url.searchParams.set("limit", String(limit));
 
-  console.log("[Neynar] Fetching trending casts...", { timeWindow, limit });
+  console.log("[Neynar] API key:", apiKey ? `${apiKey.slice(0, 8)}...` : "MISSING");
+  console.log("[Neynar] Fetching:", url.toString());
 
   const response = await fetch(url.toString(), {
     headers: {
       accept: "application/json",
       "x-api-key": apiKey,
-      "api_key": apiKey, // Some endpoints use this header instead
     },
-    next: { revalidate: 60 }, // Cache for 60 seconds
+    next: { revalidate: 60 },
   });
+
+  console.log("[Neynar] Response status:", response.status);
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error("[Neynar] API error response:", errorText);
-    throw new Error(`Neynar API error: ${response.status} ${response.statusText}`);
+    console.error("[Neynar] API error:", response.status, errorText);
+    throw new Error(`Neynar API error: ${response.status} - ${errorText}`);
   }
 
   const data = await response.json();
-  console.log("[Neynar] Got response with", data.casts?.length || 0, "casts");
+  console.log("[Neynar] Response keys:", Object.keys(data));
+  console.log("[Neynar] Casts count:", data.casts?.length ?? "no casts field");
 
-  // Handle different response structures
+  if (data.casts?.[0]) {
+    console.log("[Neynar] Sample cast keys:", Object.keys(data.casts[0]));
+  }
+
   const casts = data.casts || data.result?.casts || [];
   return casts as NeynarCast[];
 }
@@ -88,41 +94,45 @@ export function filterCastsWithUrls(casts: NeynarCast[]): NeynarCast[] {
  * Transform Neynar cast to the format expected by processTrendingCasts
  */
 export function transformNeynarCast(cast: NeynarCast) {
-  // Extract URLs from embeds
-  const embedded_urls = cast.embeds
-    ?.filter((embed) => embed.url)
-    .map((embed) => embed.url as string) || [];
+  // Extract URLs from embeds - handle both array and object formats
+  const embeds = Array.isArray(cast.embeds) ? cast.embeds : [];
+  const embedded_urls = embeds
+    .filter((embed) => embed?.url)
+    .map((embed) => embed.url as string);
 
   // Also extract URLs from text if not in embeds
   const urlRegex = /https?:\/\/[^\s]+/g;
   const textUrls = cast.text?.match(urlRegex) || [];
   const allUrls = Array.from(new Set([...embedded_urls, ...textUrls]));
 
+  // Safely access nested properties
+  const reactions = cast.reactions || { likes_count: 0, recasts_count: 0 };
+  const replies = cast.replies || { count: 0 };
+
   return {
     hash: cast.hash,
-    text: cast.text,
+    text: cast.text || "",
     timestamp: new Date(cast.timestamp),
-    fid: cast.author.fid,
+    fid: cast.author?.fid || 0,
     mentions_positions: [] as number[],
     mention_fids: cast.mentioned_profiles?.map((p) => p.fid) || [],
     embedded_urls: allUrls,
     deleted_at: null,
     author: {
-      fid: cast.author.fid,
-      fname: cast.author.username,
-      display_name: cast.author.display_name,
-      pfp_url: cast.author.pfp_url,
+      fid: cast.author?.fid || 0,
+      fname: cast.author?.username || "",
+      display_name: cast.author?.display_name || "",
+      pfp_url: cast.author?.pfp_url || null,
     },
     mentions: cast.mentioned_profiles?.map((p) => ({
       fid: p.fid,
       fname: p.username,
     })) || [],
-    // Include engagement metrics for potential sorting
     _engagement: {
-      likes: cast.reactions.likes_count,
-      recasts: cast.reactions.recasts_count,
-      replies: cast.replies.count,
-      total: cast.reactions.likes_count + cast.reactions.recasts_count * 2 + cast.replies.count,
+      likes: reactions.likes_count || 0,
+      recasts: reactions.recasts_count || 0,
+      replies: replies.count || 0,
+      total: (reactions.likes_count || 0) + (reactions.recasts_count || 0) * 2 + (replies.count || 0),
     },
   };
 }
@@ -136,6 +146,13 @@ export async function getTrendingCastsWithUrls(options: {
   apiKey: string;
 }) {
   const casts = await fetchTrendingCasts(options);
+  console.log("[Neynar] Total casts fetched:", casts.length);
+
   const castsWithUrls = filterCastsWithUrls(casts);
-  return castsWithUrls.map(transformNeynarCast);
+  console.log("[Neynar] Casts with URLs:", castsWithUrls.length);
+
+  const transformed = castsWithUrls.map(transformNeynarCast);
+  console.log("[Neynar] Transformed casts:", transformed.length);
+
+  return transformed;
 }

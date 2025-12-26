@@ -196,20 +196,21 @@ const mockCasts = [
 async function fetchData() {
   const apiKey = process.env.NEYNAR_API_KEY;
 
-  console.log("[Neynar] API key configured:", apiKey ? `Yes (${apiKey.slice(0, 8)}...)` : "No");
+  console.log("[Home] API key:", apiKey ? `${apiKey.slice(0, 8)}...` : "MISSING");
 
   if (!apiKey) {
-    console.warn("[Neynar] No API key configured, using mock data. Set NEYNAR_API_KEY env var.");
+    console.warn("[Home] No API key - using mock data");
     return await processTrendingCasts(mockCasts);
   }
 
   try {
-    // Fetch trending casts from the last 24 hours, ranked by engagement
     const casts = await getTrendingCastsWithUrls({
       timeWindow: "24h",
       limit: 100,
       apiKey,
     });
+
+    console.log("[Home] Got casts from API:", casts.length);
 
     // Filter out unwanted domains
     const filteredCasts = casts.filter((cast) => {
@@ -221,9 +222,14 @@ async function fetchData() {
       return !hasBlockedDomain && cast.author.fname;
     });
 
-    return await processTrendingCasts(filteredCasts);
+    console.log("[Home] After domain filter:", filteredCasts.length);
+
+    const processed = await processTrendingCasts(filteredCasts);
+    console.log("[Home] Processed stories:", processed.length);
+
+    return processed;
   } catch (error) {
-    console.error("[Neynar] API error, falling back to mock data:", error);
+    console.error("[Home] API error:", error);
     return await processTrendingCasts(mockCasts);
   }
 }
