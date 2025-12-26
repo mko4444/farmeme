@@ -46,20 +46,29 @@ export async function fetchTrendingCasts(options: {
   url.searchParams.set("time_window", timeWindow);
   url.searchParams.set("limit", String(limit));
 
+  console.log("[Neynar] Fetching trending casts...", { timeWindow, limit });
+
   const response = await fetch(url.toString(), {
     headers: {
       accept: "application/json",
       "x-api-key": apiKey,
+      "api_key": apiKey, // Some endpoints use this header instead
     },
     next: { revalidate: 60 }, // Cache for 60 seconds
   });
 
   if (!response.ok) {
+    const errorText = await response.text();
+    console.error("[Neynar] API error response:", errorText);
     throw new Error(`Neynar API error: ${response.status} ${response.statusText}`);
   }
 
-  const data: NeynarFeedResponse = await response.json();
-  return data.casts;
+  const data = await response.json();
+  console.log("[Neynar] Got response with", data.casts?.length || 0, "casts");
+
+  // Handle different response structures
+  const casts = data.casts || data.result?.casts || [];
+  return casts as NeynarCast[];
 }
 
 /**
